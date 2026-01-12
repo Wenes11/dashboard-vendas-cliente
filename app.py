@@ -13,13 +13,13 @@ st.set_page_config(
 )
 
 # --- CORES ---
-COR_VERDE = "#00C853"        # Verde Neon (Foco)
+COR_VERDE = "#00C853"        # Verde Neon (Foco Geral)
 COR_AZUL = "#2979FF"         # Azul Tech (Linha)
-COR_VERMELHO = "#D50000"     # Vermelho (Apenas Prejuízo)
+COR_CINZA_CHECKBOX = "#404040" # Cinza Escuro (Para o Checkbox Marcado)
 COR_CINZA_GRAFICO = "#B0BEC5" # Cinza Claro (Barras Neutras)
 COR_FUNDO_DARK = "#000000"   # Preto Absoluto
 
-# --- CSS VISUAL (CORREÇÃO DE CHECKBOX E LEGENDAS) ---
+# --- CSS VISUAL (CORREÇÃO DE CHECKBOX) ---
 def set_style(image_file):
     try:
         with open(image_file, "rb") as f:
@@ -57,34 +57,35 @@ def set_style(image_file):
         border-right: 1px solid #222;
     }}
 
-    /* --- 2. CHECKBOX (CORREÇÃO DEFINITIVA) --- */
-    /* Remove fundo do container geral do checkbox */
-    .stCheckbox {{
-        background-color: transparent !important;
-    }}
-    /* Garante que o TEXTO (label) tenha fundo transparente */
-    .stCheckbox label {{
-        background-color: transparent !important;
-    }}
-    /* Remove fundo de qualquer wrapper de texto interno */
-    .stCheckbox div[data-testid="stMarkdownContainer"] p {{
-        background-color: transparent !important;
-    }}
+    /* --- 2. CHECKBOX (CORREÇÃO: TRANSPARENTE QUANDO DESMARCADO) --- */
     
-    /* O quadradinho DESMARCADO (Transparente com borda cinza) */
-    .stCheckbox span {{
-        background-color: transparent !important;
-        border-color: #666 !important;
-    }}
+    /* Container transparente */
+    .stCheckbox {{ background-color: transparent !important; }}
     
-    /* O quadradinho MARCADO (Apenas o quadrado fica verde) */
+    /* Texto (Label) transparente */
+    .stCheckbox label {{ background-color: transparent !important; color: white !important; }}
+    .stCheckbox p {{ background-color: transparent !important; }}
+    
+    /* Quadrado DESMARCADO -> AGORA TRANSPARENTE COM BORDA */
+    .stCheckbox div[role="checkbox"] {{
+        background-color: transparent !important; /* Era white, agora transparent */
+        border: 1px solid #AAA !important;        /* Borda clara para ver a caixa */
+    }}
+    /* Fallback */
+    .stCheckbox input + div {{
+        background-color: transparent !important;
+        border: 1px solid #AAA !important;
+    }}
+
+    /* Quadrado MARCADO -> CINZA ESCURO (Preenchido) */
     .stCheckbox input:checked + div {{
-        background-color: {COR_VERDE} !important;
-        border-color: {COR_VERDE} !important;
+        background-color: {COR_CINZA_CHECKBOX} !important;
+        border: 1px solid {COR_CINZA_CHECKBOX} !important;
     }}
-    /* O Check (✓) dentro do quadrado fica PRETO */
+    
+    /* Ícone de Check (Branco) */
     .stCheckbox input:checked + div svg {{
-        fill: black !important;
+        fill: white !important;
     }}
 
     /* --- 3. SLIDER (VISIBILIDADE) --- */
@@ -131,7 +132,14 @@ def set_style(image_file):
         color: white !important;
     }}
 
-    header {{visibility: hidden;}}
+    /* --- 6. HEADER E TOOLBAR --- */
+    header[data-testid="stHeader"] {{
+        visibility: visible !important;
+        background-color: transparent !important;
+    }}
+    div[data-testid="stDecoration"] {{ display: none; }}
+    header[data-testid="stHeader"] button {{ color: white !important; }}
+    header[data-testid="stHeader"] .stAction {{ color: white !important; }}
     </style>
     """
     st.markdown(style, unsafe_allow_html=True)
@@ -223,30 +231,30 @@ def kpi(label, val, cor_borda):
 c1, c2, c3, c4 = st.columns(4)
 with c1: kpi("FATURAMENTO", f"R$ {vendas:,.0f}".replace(",", "."), COR_VERDE)
 with c2: kpi("INVESTIMENTO", f"R$ {inv:,.0f}".replace(",", "."), COR_VERDE) 
-with c3: kpi("LUCRO BRUTO", f"R$ {lucro:,.0f}".replace(",", "."), COR_VERDE if lucro > 0 else COR_VERMELHO)
+# MUDANÇA: Lucro agora é sempre VERDE (removido vermelho)
+with c3: kpi("LUCRO BRUTO", f"R$ {lucro:,.0f}".replace(",", "."), COR_VERDE)
 with c4: kpi("ROAS", f"{roas:.2f}x", COR_AZUL)
 
 st.markdown("---")
 tab1, tab2 = st.tabs(["Tendência", "Financeiro"])
 
-# Função de Tema para FORÇAR BRANCO no gráfico
 def tema(fig):
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)", 
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="white"), # Fonte Geral Branca
+        font=dict(color="white"),
         title_font=dict(color="white"),
         legend_font=dict(color="white"),
         xaxis=dict(
             showgrid=False, 
-            color="white", # Cor do texto do eixo X
+            color="white",
             title_font=dict(color="white"),
             tickfont=dict(color="white")
         ),
         yaxis=dict(
             showgrid=True, 
             gridcolor="#333", 
-            color="white", # Cor do texto do eixo Y
+            color="white",
             title_font=dict(color="white"),
             tickfont=dict(color="white")
         ),
