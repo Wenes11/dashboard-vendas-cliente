@@ -13,13 +13,13 @@ st.set_page_config(
 )
 
 # --- CORES ---
-COR_VERDE = "#00C853"        # Verde Neon (Foco Geral)
-COR_AZUL = "#2979FF"         # Azul Tech (Linha)
-COR_CINZA_CHECKBOX = "#404040" # Cinza Escuro (Para o Checkbox Marcado)
-COR_CINZA_GRAFICO = "#B0BEC5" # Cinza Claro (Barras Neutras)
+COR_VERDE = "#00C853"        # Verde Neon
+COR_AZUL = "#2979FF"         # Azul Tech
+COR_CINZA_CHECKBOX = "#404040" # Cinza Escuro
+COR_CINZA_GRAFICO = "#B0BEC5" # Cinza Claro
 COR_FUNDO_DARK = "#000000"   # Preto Absoluto
 
-# --- CSS VISUAL (CORREÇÃO DE CHECKBOX) ---
+# --- CSS VISUAL ---
 def set_style(image_file):
     try:
         with open(image_file, "rb") as f:
@@ -37,7 +37,6 @@ def set_style(image_file):
         font-family: 'Montserrat', sans-serif;
     }}
 
-    /* 1. FUNDO GERAL -> TEXTO BRANCO */
     .stApp {{
         background-color: {COR_FUNDO_DARK};
         background-image: {bg_image_css};
@@ -46,53 +45,42 @@ def set_style(image_file):
         color: white !important;
     }}
     
-    /* Força textos brancos */
-    h1, h2, h3, h4, h5, h6, p, label, span, li, div, small, strong {{
+    /* GLOBAL: Força textos comuns a serem brancos */
+    h1, h2, h3, h4, h5, h6, p, label, li {{
         color: white !important;
     }}
 
-    /* Sidebar Preta */
     section[data-testid="stSidebar"] {{
         background-color: #050505 !important;
         border-right: 1px solid #222;
     }}
 
-    /* --- 2. CHECKBOX (CORREÇÃO: TRANSPARENTE QUANDO DESMARCADO) --- */
-    
-    /* Container transparente */
+    /* CHECKBOX */
     .stCheckbox {{ background-color: transparent !important; }}
+    .stCheckbox label {{ background-color: transparent !important; }}
     
-    /* Texto (Label) transparente */
-    .stCheckbox label {{ background-color: transparent !important; color: white !important; }}
-    .stCheckbox p {{ background-color: transparent !important; }}
-    
-    /* Quadrado DESMARCADO -> AGORA TRANSPARENTE COM BORDA */
+    /* Desmarcado */
     .stCheckbox div[role="checkbox"] {{
-        background-color: transparent !important; /* Era white, agora transparent */
-        border: 1px solid #AAA !important;        /* Borda clara para ver a caixa */
+        background-color: transparent !important; 
+        border: 1px solid #AAA !important;
     }}
-    /* Fallback */
     .stCheckbox input + div {{
         background-color: transparent !important;
         border: 1px solid #AAA !important;
     }}
 
-    /* Quadrado MARCADO -> CINZA ESCURO (Preenchido) */
+    /* Marcado */
     .stCheckbox input:checked + div {{
         background-color: {COR_CINZA_CHECKBOX} !important;
         border: 1px solid {COR_CINZA_CHECKBOX} !important;
     }}
-    
-    /* Ícone de Check (Branco) */
     .stCheckbox input:checked + div svg {{
         fill: white !important;
     }}
-
-    /* --- 3. SLIDER (VISIBILIDADE) --- */
+    
+    /* SLIDER */
     div[data-testid="stSliderTickBarMin"], div[data-testid="stSliderTickBarMax"] {{
         color: #FFFFFF !important;
-        font-weight: bold !important;
-        font-size: 14px !important;
     }}
     div[data-baseweb="slider"] > div {{
         background-color: #333 !important;
@@ -105,10 +93,9 @@ def set_style(image_file):
         border: 2px solid {COR_VERDE} !important;
     }}
 
-    /* --- 4. INPUTS DO SIMULADOR (Branco c/ Texto Preto) --- */
+    /* INPUTS */
     div[data-baseweb="input"] {{
         background-color: #FFFFFF !important;
-        border: 1px solid #CCC !important;
         border-radius: 5px !important;
     }}
     input[type="number"] {{
@@ -118,33 +105,28 @@ def set_style(image_file):
         -webkit-text-fill-color: #000000 !important;
     }}
 
-    /* --- 5. KPI CARDS --- */
+    /* KPIS */
     div[data-testid="stMetric"] {{
         background-color: rgba(15, 15, 15, 0.9);
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 8px;
         padding: 15px;
     }}
-    div[data-testid="stMetricLabel"] label {{
-        color: #CCC !important;
-    }}
-    div[data-testid="stMetricValue"] {{
-        color: white !important;
-    }}
+    div[data-testid="stMetricLabel"] label {{ color: #CCC !important; }}
+    div[data-testid="stMetricValue"] {{ color: white !important; }}
 
-    /* --- 6. HEADER E TOOLBAR --- */
-    header[data-testid="stHeader"] {{
-        visibility: visible !important;
-        background-color: transparent !important;
-    }}
+    header[data-testid="stHeader"] {{ visibility: visible !important; background-color: transparent !important; }}
     div[data-testid="stDecoration"] {{ display: none; }}
-    header[data-testid="stHeader"] button {{ color: white !important; }}
-    header[data-testid="stHeader"] .stAction {{ color: white !important; }}
+    header[data-testid="stHeader"] button, header[data-testid="stHeader"] .stAction {{ color: white !important; }}
     </style>
     """
     st.markdown(style, unsafe_allow_html=True)
 
 set_style('fundo.jpg')
+
+# --- FUNÇÃO FORMATAR MOEDA BR ---
+def fmt(valor):
+    return f"R$ {valor:,.0f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 # --- DADOS ---
 @st.cache_data
@@ -180,7 +162,6 @@ if 'Mes_ID' in df.columns:
     st.sidebar.markdown("**Período**")
     id_sele = st.sidebar.slider("filtro_data", min_id, max_id, (min_id, max_id), label_visibility="collapsed")
     st.sidebar.markdown(f"🗓️ **{nomes.get(id_sele[0], '?').upper()}** até **{nomes.get(id_sele[1], '?').upper()}**")
-    
     df_f = df[(df['Mes_ID'] >= id_sele[0]) & (df['Mes_ID'] <= id_sele[1])].copy()
 else:
     df_f = df.copy()
@@ -196,21 +177,28 @@ for n, c in canais.items():
         sel_canais.append(c)
 df_f['INVESTIMENTO_ADAPTADO'] = df_f[sel_canais].sum(axis=1) if sel_canais else 0
 
-# Simulador
+# --- SIMULADOR CORRIGIDO (SEM IDENTAÇÃO PARA NÃO QUEBRAR O HTML) ---
 st.sidebar.markdown("---")
-st.sidebar.markdown("**Simulador de Meta** (Investimento R$):")
-inv_sim = st.sidebar.number_input("simulador_input", value=50000, step=5000, label_visibility="collapsed")
+st.sidebar.markdown("**Simulador de Meta** 🔮")
+
+inv_sim = st.sidebar.number_input("Digite o Investimento (R$)", value=5000, step=1000)
 
 roas_medio = df_f['VENDAS'].sum() / df_f['INVESTIMENTO_ADAPTADO'].sum() if df_f['INVESTIMENTO_ADAPTADO'].sum() > 0 else 0
-projecao = inv_sim * roas_medio
+fat_proj = inv_sim * roas_medio
+lucro_proj = fat_proj - inv_sim
 
-# Resultado Simulador
-st.sidebar.markdown(f"""
-<div style="background-color:#111; padding:10px; border-radius:5px; border:1px solid #444; margin-top:5px;">
-    <span style="color:#CCC; font-size:11px;">FATURAMENTO ESTIMADO</span><br>
-    <span style="color:{COR_VERDE}; font-size:20px; font-weight:bold;">R$ {projecao:,.0f}</span>
+# AQUI ESTAVA O ERRO: IDENTAÇÃO. O CÓDIGO ABAIXO ESTÁ COLADO NA ESQUERDA.
+# E TROCAMOS <P> POR <DIV/SPAN> PARA FUGIR DO CSS GLOBAL BRANCO.
+html_simulador = f"""
+<div style="background-color:#FFFFFF; padding:15px; border-radius:10px; border:1px solid #CCC; margin-top:10px;">
+<span style="color:#666 !important; font-size:10px; font-weight:700; text-transform:uppercase; display:block;">FATURAMENTO PROJETADO</span>
+<span style="color:#000000 !important; font-size:24px; font-weight:800; display:block; margin-top:5px;">{fmt(fat_proj)}</span>
+<div style="border-top:1px solid #EEE; margin:10px 0;"></div>
+<span style="color:#666 !important; font-size:10px; font-weight:700; text-transform:uppercase; display:block;">LUCRO ESTIMADO</span>
+<span style="color:{COR_VERDE} !important; font-size:18px; font-weight:700; display:block; margin-top:5px;">{fmt(lucro_proj)}</span>
 </div>
-""", unsafe_allow_html=True)
+"""
+st.sidebar.markdown(html_simulador, unsafe_allow_html=True)
 
 # --- KPI PRINCIPAL ---
 st.title("📊 Painel Estratégico")
@@ -229,10 +217,9 @@ def kpi(label, val, cor_borda):
     """, unsafe_allow_html=True)
 
 c1, c2, c3, c4 = st.columns(4)
-with c1: kpi("FATURAMENTO", f"R$ {vendas:,.0f}".replace(",", "."), COR_VERDE)
-with c2: kpi("INVESTIMENTO", f"R$ {inv:,.0f}".replace(",", "."), COR_VERDE) 
-# MUDANÇA: Lucro agora é sempre VERDE (removido vermelho)
-with c3: kpi("LUCRO BRUTO", f"R$ {lucro:,.0f}".replace(",", "."), COR_VERDE)
+with c1: kpi("FATURAMENTO", fmt(vendas), COR_VERDE)
+with c2: kpi("INVESTIMENTO", fmt(inv), COR_VERDE) 
+with c3: kpi("LUCRO BRUTO", fmt(lucro), COR_VERDE)
 with c4: kpi("ROAS", f"{roas:.2f}x", COR_AZUL)
 
 st.markdown("---")
@@ -245,57 +232,31 @@ def tema(fig):
         font=dict(color="white"),
         title_font=dict(color="white"),
         legend_font=dict(color="white"),
-        xaxis=dict(
-            showgrid=False, 
-            color="white",
-            title_font=dict(color="white"),
-            tickfont=dict(color="white")
-        ),
-        yaxis=dict(
-            showgrid=True, 
-            gridcolor="#333", 
-            color="white",
-            title_font=dict(color="white"),
-            tickfont=dict(color="white")
-        ),
+        xaxis=dict(showgrid=False, color="white", title_font=dict(color="white"), tickfont=dict(color="white")),
+        yaxis=dict(showgrid=True, gridcolor="#333", color="white", title_font=dict(color="white"), tickfont=dict(color="white")),
     )
     return fig
 
 with tab1:
     fig = go.Figure()
-    # Barras Cinza Claro
-    fig.add_trace(go.Bar(
-        x=df_f['MÊS'], y=df_f['INVESTIMENTO_ADAPTADO'], 
-        name='Investimento (Custo)', marker_color=COR_CINZA_GRAFICO, opacity=0.6
-    ))
-    # Linha Azul
-    fig.add_trace(go.Scatter(
-        x=df_f['MÊS'], y=df_f['VENDAS'], 
-        name='Curva de Vendas', yaxis='y2', 
-        mode='lines+markers',
-        line=dict(color=COR_AZUL, width=4),
-        marker=dict(color='white', size=6)
-    ))
-    fig.update_layout(
-        title="Performance Comercial: Vendas vs. Investimento",
-        yaxis2=dict(overlaying='y', side='right', showgrid=False),
-        legend=dict(orientation="h", y=1.1, font=dict(color="white"))
-    )
+    fig.add_trace(go.Bar(x=df_f['MÊS'], y=df_f['INVESTIMENTO_ADAPTADO'], name='Investimento', marker_color=COR_CINZA_GRAFICO, opacity=0.6))
+    fig.add_trace(go.Scatter(x=df_f['MÊS'], y=df_f['VENDAS'], name='Vendas', yaxis='y2', mode='lines+markers',
+                             line=dict(color=COR_AZUL, width=4), marker=dict(color='white', size=6)))
+    fig.update_layout(title="Vendas vs. Investimento", yaxis2=dict(overlaying='y', side='right', showgrid=False), legend=dict(orientation="h", y=1.1, font=dict(color="white")))
     st.plotly_chart(tema(fig), use_container_width=True)
+    st.caption("ℹ️ **Análise:** Compare a evolução das Vendas (Linha Azul) em relação ao Investimento (Barras Cinzas).")
 
 with tab2:
     c_a, c_b = st.columns(2)
     with c_a:
         totais = {k: df_f[v].sum() for k,v in canais.items() if v in df.columns}
-        fig_p = px.pie(
-            pd.DataFrame(list(totais.items()), columns=['C', 'V']), 
-            values='V', names='C', 
-            title="Mix de Investimento (Por Canal)", 
-            hole=0.5
-        )
+        fig_p = px.pie(pd.DataFrame(list(totais.items()), columns=['C', 'V']), values='V', names='C', title="Mix de Mídia", hole=0.5)
         st.plotly_chart(tema(fig_p), use_container_width=True)
+        st.caption("ℹ️ **Análise:** Distribuição do orçamento entre os canais.")
+        
     with c_b:
         df_f['L'] = df_f['VENDAS'] - df_f['INVESTIMENTO_ADAPTADO']
         fig_l = go.Figure(go.Bar(x=df_f['MÊS'], y=df_f['L'], marker_color=COR_VERDE, name="Lucro"))
-        fig_l.update_layout(title="Resultado Operacional (Lucro Líquido)")
+        fig_l.update_layout(title="Lucro Líquido")
         st.plotly_chart(tema(fig_l), use_container_width=True)
+        st.caption("ℹ️ **Análise:** Sobra de caixa após descontar o investimento.")
